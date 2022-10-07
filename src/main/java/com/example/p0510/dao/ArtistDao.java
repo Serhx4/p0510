@@ -20,7 +20,7 @@ public class ArtistDao {
 
     public List<Artist> findAll() {
         try (Connection connection = ds.getConnection();
-            PreparedStatement ps = connection.prepareStatement("select * from artist");
+            PreparedStatement ps = connection.prepareStatement("select * from \"Artist\"");
             ResultSet resultSet = ps.executeQuery()) {
             List<Artist> result = new ArrayList<>();
             while (resultSet.next()) {
@@ -36,7 +36,7 @@ public class ArtistDao {
 
     public void delete(int id) {
         try (Connection connection = ds.getConnection();
-            PreparedStatement ps = connection.prepareStatement("delete from artist where ArtistId = ?")
+            PreparedStatement ps = connection.prepareStatement("delete from \"Artist\" where \"ArtistId\" = ?")
         ) {
             ps.setInt(1, id);
             ps.executeUpdate();
@@ -47,8 +47,10 @@ public class ArtistDao {
 
     public void add(String name) {
         try (Connection connection = ds.getConnection();
-             PreparedStatement ps = connection.prepareStatement("insert into artist (Name) values (?)")) {
-            ps.setString(1, name);
+             PreparedStatement ps = connection.prepareStatement(
+                     "insert into \"Artist\" values (?, ?)")) {
+            ps.setInt(1, idAutoIncrement());
+            ps.setString(2, name);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -57,7 +59,7 @@ public class ArtistDao {
 
     public void update(Artist artist) {
         try (Connection connection = ds.getConnection();
-            PreparedStatement ps = connection.prepareStatement("update artist set Name = ? where ArtistId = ?")
+            PreparedStatement ps = connection.prepareStatement("update \"Artist\" set \"Name\" = ? where \"ArtistId\" = ?")
         ) {
             ps.setString(1, artist.getName());
             ps.setInt(2, artist.getId());
@@ -69,7 +71,7 @@ public class ArtistDao {
 
     public Artist findById(int id) {
         try (Connection connection = ds.getConnection();
-            PreparedStatement ps = connection.prepareStatement("select * from artist where ArtistId = ?")
+            PreparedStatement ps = connection.prepareStatement("select * from \"Artist\" where \"ArtistId\" = ?")
         ) {
             ps.setInt(1, id);
             ResultSet resultSet = ps.executeQuery();
@@ -77,6 +79,20 @@ public class ArtistDao {
                 String name = resultSet.getString("Name");
                 return new Artist(id, name);
             } else return null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int idAutoIncrement() {
+        try (Connection connection = ds.getConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "select max(\"ArtistId\") Id\n from \"Artist\"")) {
+            ResultSet resultSet = ps.executeQuery();
+            if (resultSet.next()) {
+                int id = resultSet.getInt("Id");
+                return ++id;
+            } else return -1; // todo broken
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

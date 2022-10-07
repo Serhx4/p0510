@@ -23,7 +23,7 @@
         <c:forEach items="${albumBean.albums}" var="album">
             <tr>
                 <td>${album.id}</td>
-                <td>${album.title}</td>
+                <td><a href="show_tracks_of?id=${album.id}">${album.title}</a></td>
             </tr>
         </c:forEach>
         </tbody>
