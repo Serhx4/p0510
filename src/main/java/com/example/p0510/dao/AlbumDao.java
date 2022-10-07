@@ -20,7 +20,7 @@ public class AlbumDao {
 
     public List<Album> findAll() {
         try (Connection connection = ds.getConnection();
-             PreparedStatement ps = connection.prepareStatement("select * from album")
+             PreparedStatement ps = connection.prepareStatement("select * from \"Album\"")
         ) {
             ResultSet resultSet = ps.executeQuery();
             List<Album> result = new ArrayList<>();
@@ -36,9 +36,26 @@ public class AlbumDao {
         }
     }
 
+    public Album findById(int albumId) {
+        try (Connection connection = ds.getConnection();
+             PreparedStatement ps = connection.prepareStatement("select * from \"Album\" where \"AlbumId\" = ?")
+        ) {
+            ps.setInt(1, albumId);
+            ResultSet resultSet = ps.executeQuery();
+            if (resultSet.next()) {
+                int id = resultSet.getInt("AlbumId");
+                String title = resultSet.getString("Title");
+                int artistId = resultSet.getInt("ArtistId");
+                return new Album(id, title, artistId);
+            } else return null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<Album> findByArtistId(int artistId) {
         try (Connection connection = ds.getConnection();
-             PreparedStatement ps = connection.prepareStatement("select * from album where ArtistId = ?")
+             PreparedStatement ps = connection.prepareStatement("select * from \"Album\" where \"ArtistId\" = ?")
         ) {
             ps.setInt(1, artistId);
             ResultSet resultSet = ps.executeQuery();
